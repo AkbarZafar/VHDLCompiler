@@ -26,6 +26,9 @@
 
 package ece351.w.rdescent;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.parboiled.common.ImmutableList;
 
 import ece351.util.Lexer;
@@ -47,6 +50,24 @@ public final class WRecursiveDescentParser {
     public WProgram parse() {
     	// STUB: return null;
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+        WProgram program = new WProgram();
+        while (!lexer.inspectEOF()) {
+            String name = lexer.consumeID();
+            Waveform wave = new Waveform(name);
+            lexer.consume(":");
+    
+            String[] bits = {"0", "1"};
+    
+            wave = wave.append(lexer.consume(bits));
+            while(lexer.inspect(bits)){
+                wave = wave.append(lexer.consume(bits));
+            }
+    
+            lexer.consume(";");       
+            program = program.append(wave);     
+        }
+
+        return program;
+
     }
 }
