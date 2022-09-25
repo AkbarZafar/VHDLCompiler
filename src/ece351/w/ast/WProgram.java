@@ -128,7 +128,7 @@ public final class WProgram implements Examinable {
 // TODO: short code snippet
 		String ans = "";
 		for( Waveform w: waveforms) {
-			ans += w.toString() + "\\n";
+			ans += w.toString() + "\n";
 		}
 		return ans;
 	}

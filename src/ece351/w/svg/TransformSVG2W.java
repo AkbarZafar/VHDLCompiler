@@ -62,10 +62,26 @@ public final class TransformSVG2W {
 		final List<Line> lines = new ArrayList<Line>(pinslines.segments);
 		final List<Pin> pins = new ArrayList<Pin>(pinslines.pins);
 
-// TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		WProgram wProgram = new WProgram();
+		final int y_off =50;
 
-		return new WProgram(waveforms);
+// TODO: longer code snippet
+		for(Pin pin: pins) {
+			int y_midPoint = pin.y;
+			List<Line> waveFormLines = new ArrayList<Line>();
+			List<Pin> waveformPin = new ArrayList<Pin>();
+			waveformPin.add(pin);
+
+			for(Line line: lines) {
+				if(Math.abs(line.y2 - y_midPoint) <= y_off) {
+					waveFormLines.add(line);
+				}
+			}
+			wProgram = wProgram.append(transformLinesToWaveform(waveFormLines, waveformPin));
+		}
+
+
+		return wProgram;
 	}
 
 	/**
@@ -86,8 +102,29 @@ throw new ece351.util.Todo351Exception();
 	private static Waveform transformLinesToWaveform(final List<Line> lines, final List<Pin> pins) {
 		if(lines.isEmpty()) return null;
 
-// TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		String ID = pins.get(0).id;
+		int mid = pins.get(0).y;
+		Waveform waveform = new Waveform(ID);
+		String currBit = "0";
+
+		for(Line line: lines){
+			int x1 = line.x1;
+			int x2 = line.x2;
+
+			int y1 = line.y1;
+			int y2 = line.y2;
+
+			if(y1 == y2) {
+				if(y1 > mid){
+					waveform = waveform.append("0");
+				}else {
+					waveform = waveform.append("1");
+				}
+			}
+
+		}
+
+		return waveform;
 	}
 
 	/**
