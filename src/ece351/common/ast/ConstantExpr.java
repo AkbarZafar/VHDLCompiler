@@ -63,8 +63,10 @@ public final class ConstantExpr extends Expr {
 	}
 
 	public String toString() {
-// TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+		if(b) {
+			return "'1'";
+		}
+		return "'0'";
 	}
 
 	public Expr accept(final ExprVisitor v){
@@ -90,7 +92,7 @@ throw new ece351.util.Todo351Exception();
 
 		// compare field values
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+		return this.b == that.b;
 	}
 
 	@Override

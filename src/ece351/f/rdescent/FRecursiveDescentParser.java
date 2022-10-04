@@ -37,6 +37,7 @@ import ece351.common.ast.VarExpr;
 import ece351.f.ast.FProgram;
 import ece351.util.CommandLine;
 import ece351.util.Lexer;
+import edu.mit.csail.sdg.alloy4compiler.ast.ExprUnary;
 
 
 
@@ -89,11 +90,66 @@ public final class FRecursiveDescentParser implements Constants {
         return new AssignmentStatement(var, expr);
     }
     
-    Expr expr() { throw new ece351.util.Todo351Exception(); } // TODO // TODO: replace this stub
-    Expr term() { throw new ece351.util.Todo351Exception(); } // TODO // TODO: replace this stub
-    Expr factor() { throw new ece351.util.Todo351Exception(); } // TODO // TODO: replace this stub
-    VarExpr var() { throw new ece351.util.Todo351Exception(); } // TODO // TODO: replace this stub
-    ConstantExpr constant() { throw new ece351.util.Todo351Exception(); } // TODO // TODO: replace this stub
+    Expr expr() { 
+        Expr e = term();
+        while(lexer.inspect("or")) {
+            lexer.consume("or");
+            Expr b = term();
+            e = new OrExpr(e, b);
+        }
+
+        return e;
+    } // TODO // TODO: replace this stub
+    
+    Expr term() {
+
+        Expr a = factor();
+        while(lexer.inspect("and")) {
+            lexer.consume("and");
+            Expr b = factor();
+            a = new AndExpr(a, b);
+        }
+        return a;
+    } // TODO // TODO: replace this stub
+
+    Expr factor() { 
+        if(lexer.inspect("not")){
+            lexer.consume("not");
+            Expr e = factor();
+            
+            return new NotExpr(e);
+        }
+
+        if(lexer.inspect("(")){
+            lexer.consume("(");
+            Expr e = expr();
+            lexer.consume(")");
+            return e;
+        }
+
+        if(peekConstant()){
+            lexer.consume("'");
+            Expr e = constant();
+            lexer.consume("'");
+            return e;
+        }
+
+        return var();
+    } // TODO // TODO: replace this stub
+    
+    VarExpr var() { 
+        String s = lexer.consumeID();
+        return new VarExpr(s);
+     } // TODO // TODO: replace this stub
+
+    ConstantExpr constant() { 
+        if(lexer.inspect("1")){
+            lexer.consume("1");
+            return ConstantExpr.TrueExpr;
+        }
+        lexer.consume("0");
+        return ConstantExpr.FalseExpr;
+    } // TODO // TODO: replace this stub
 
     // helper functions
     private boolean peekConstant() {
