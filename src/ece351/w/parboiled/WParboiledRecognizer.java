@@ -77,7 +77,7 @@ public /*final*/ class WParboiledRecognizer extends BaseParser351 {
 	@Override
 	public Rule Program() {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+        return Sequence(OneOrMore(Waveform()), EOI);
 	}
     
 	/**
@@ -85,16 +85,20 @@ throw new ece351.util.Todo351Exception();
 	 */
     public Rule Waveform() {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+        return Sequence(Name(), W0(),':', W0(), BitString(), W0(),';', W0());
     }
-
+    
     /**
      * The first token in each statement is the name of the waveform 
      * that statement represents.
      */
     public Rule Name() {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+        return Sequence(Letter(), ZeroOrMore(FirstOf(Letter(), Digit(), "_")));
+    }
+
+    public Rule Digit() {
+        return CharRange('0', '9');
     }
 
     /**
@@ -103,7 +107,7 @@ throw new ece351.util.Todo351Exception();
      */
     public Rule Letter() {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+        return FirstOf(CharRange('A', 'Z'), CharRange('a', 'z'));
     }
 
     /**
@@ -111,7 +115,7 @@ throw new ece351.util.Todo351Exception();
      */
     public Rule BitString() {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+        return Sequence(Bit(), ZeroOrMore(FirstOf(Bit(), W())));
     }
     
     /**
@@ -120,7 +124,7 @@ throw new ece351.util.Todo351Exception();
      */
     public Rule Bit() {       
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+        return AnyOf("01");
     }
 
 }

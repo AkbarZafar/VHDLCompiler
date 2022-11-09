@@ -74,7 +74,9 @@ public /*final*/ class WParboiledParser extends BaseParser351 {
 	@Override
     public Rule Program() {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+        WProgram wp = new WProgram();
+
+        return Sequence( push(wp), OneOrMore(Waveform()), EOI);
     }
 
 	/**
@@ -82,7 +84,8 @@ throw new ece351.util.Todo351Exception();
 	 */
     public Rule Waveform() {
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+        Waveform w = new Waveform();
+        return Sequence(push(w), Name(), push(((Waveform)pop()).rename(match())), W0(),':', W0(), BitString(), swap(), push(((WProgram)pop()).append((Waveform)pop())), W0(),';', W0());
     }
 
     /**
@@ -90,7 +93,11 @@ throw new ece351.util.Todo351Exception();
      */
     public Rule Name() {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+        return Sequence(Letter(), ZeroOrMore(FirstOf(Letter(), Digit(), "_")));
+    }
+
+    public Rule Digit() {
+        return CharRange('0', '9');
     }
     
     /**
@@ -99,7 +106,7 @@ throw new ece351.util.Todo351Exception();
      */
     public Rule Letter() {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+        return FirstOf(CharRange('A', 'Z'), CharRange('a', 'z'));
     }
 
     /**
@@ -107,7 +114,7 @@ throw new ece351.util.Todo351Exception();
      */
     public Rule BitString() {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+        return Sequence(Bit(), ZeroOrMore(FirstOf(Bit(), W())));
     }
     
     /**
@@ -115,8 +122,8 @@ throw new ece351.util.Todo351Exception();
      * Recall that PEGs incorporate lexing into the parser.
      */
     public Rule Bit() {   
-// TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+    // TODO: short code snippet
+        return Sequence(AnyOf("01"), push(((Waveform)(pop())).append(match())));
     }
 
 }
