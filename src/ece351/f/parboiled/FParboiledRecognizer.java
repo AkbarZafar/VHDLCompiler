@@ -31,6 +31,7 @@ import java.lang.invoke.MethodHandles;
 import org.parboiled.Rule;
 
 import ece351.common.ast.Constants;
+import ece351.f.ast.FProgram;
 import ece351.util.CommandLine;
 
 //Parboiled requires that this class not be final
@@ -59,7 +60,53 @@ public /*final*/ class FParboiledRecognizer extends FBase implements Constants {
 		// For the grammar production Id, ensure that the Id does not match any of the keywords specified
 		// in the rule, 'Keyword'
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+        FProgram fp = new FProgram();
+        return Sequence(push(fp), OneOrMore(Formula()), EOI);
 	}
+
+    public Rule Formula() {
+        return Sequence(Var(), W0(), "<=", W0(), Expr(), W0(), ";", W0());
+    }
+
+    public Rule Var() {
+        return Sequence(TestNot("and", "or"), Letter(), ZeroOrMore(FirstOf(Letter(), Digit(), "_")));
+    }
+
+    public Rule Expr() {
+        return Sequence(Term(), W0(), ZeroOrMore(Sequence(W0(),"or", W0(), Term()), W0()));
+    }
+
+    public Rule Term() {
+        return Sequence(Factor(), W0(), ZeroOrMore(Sequence(W0(),"and", W0(), Factor(), W0())));
+    }
+
+    public Rule Factor() {
+        return FirstOf(NFactor(), Var(), Constant(), PExpr());
+    }
+
+    public Rule PExpr() {
+        return Sequence('(', W0(), Expr(), W0(), ')');
+    }
+
+    public Rule NFactor() {
+        return Sequence("not", W0(), Factor());
+    }
+
+    public Rule Constant() {
+        return Sequence("'", AnyOf("01"), "'");
+    }
+
+    public Rule Digit() {
+        return CharRange('0', '9');
+    }
+
+    /**
+     * A Name is composed of a sequence of Letters. 
+     * Recall that PEGs incorporate lexing into the parser.
+     */
+    public Rule Letter() {
+// TODO: short code snippet
+        return FirstOf(CharRange('A', 'Z'), CharRange('a', 'z'));
+    }
 
 }

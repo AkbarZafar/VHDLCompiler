@@ -88,6 +88,69 @@ public /*final*/ class FParboiledParser extends FBase implements Constants {
 	@Override
 	public Rule Program() {
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		FProgram fp = new FProgram();
+        return Sequence(push(fp), OneOrMore(Formula()), EOI);
 	}
+
+    public Rule Formula() {
+        return Sequence(
+            Var(), 
+            push(new AssignmentStatement((VarExpr)pop())),
+            W0(), 
+            "<=", 
+            W0(), 
+            Expr(), 
+            swap(), 
+            push(((AssignmentStatement)(pop())).varyExpr((Expr)pop())), 
+            swap(), 
+            push(((FProgram)pop()).append((AssignmentStatement)pop())), 
+            W0(), 
+            ";", 
+            W0());
+    }
+
+    public Rule Var() {
+        return Sequence(Id(), push(new VarExpr(match())));
+    }
+    public Rule Id() {
+        return Sequence(TestNot("and", "or"), Letter(), ZeroOrMore(FirstOf(Letter(), Digit(), "_")));
+    }
+
+    public Rule Expr() {
+        return Sequence(Term(), W0(), ZeroOrMore(Sequence(W0(),"or", W0(), Term()), swap(), push(new OrExpr(((Expr)pop()), ((Expr)pop()))), W0()));
+    }
+
+    public Rule Term() {
+        return Sequence(Factor(), W0(), ZeroOrMore(Sequence(W0(),"and", W0(), Factor(), swap(), push(new AndExpr(((Expr)pop()), ((Expr)pop()))), W0())));
+    }
+
+    public Rule Factor() {
+        return FirstOf(NFactor(), Var(), Constant(), PExpr());
+    }
+
+    public Rule PExpr() {
+
+        return Sequence('(', W0(), Expr(), W0(), ')');
+    }
+
+    public Rule NFactor() {
+        return Sequence(W0(),"not",  W0(), Factor(), push(new NotExpr((Expr)pop())));
+    }
+
+    public Rule Constant() {
+        return FirstOf(Sequence("'0'", push(ConstantExpr.FalseExpr)), Sequence("'1'", push(ConstantExpr.TrueExpr)));
+    }
+
+    public Rule Digit() {
+        return CharRange('0', '9');
+    }
+
+    /**
+     * A Name is composed of a sequence of Letters. 
+     * Recall that PEGs incorporate lexing into the parser.
+     */
+    public Rule Letter() {
+// TODO: short code snippet
+        return FirstOf(CharRange('A', 'Z'), CharRange('a', 'z'));
+    }
 }
