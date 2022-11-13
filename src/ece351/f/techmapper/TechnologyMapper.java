@@ -123,17 +123,51 @@ public final class TechnologyMapper extends PostOrderExprVisitor {
 		header(out);
 		
 		// build a set of all of the exprs in the program
+		IdentityHashSet<Expr> statements = ExtractAllExprs.allExprs(program);
+
 		// build substitutions by determining equivalences of exprs
+		for(Expr e: statements){
+			if(!substitutions.containsKey(e)){
+				for(Expr e2: statements){
+					if(e.isomorphic(e2)){
+						substitutions.put(e2, e);
+					}
+				}
+			}
+
+			if(e.getClass() == NotExpr.class){
+				node(e.serialNumber(), e.toString(), "../../gates/not_noleads.png");
+			}
+			if (e.getClass() == OrExpr.class) {
+				node(e.serialNumber(), e.toString(), "../../gates/or_noleads.png");
+			}
+			if (e.getClass() == AndExpr.class) {
+				node(e.serialNumber(), e.toString(), "../../gates/and_noleads.png");
+			}
+		}
 		// create nodes for output vars
+		traverseFProgram(program);
+		for(AssignmentStatement e: program.formulas){
+			node(e.outputVar.serialNumber(), e.outputVar.toString());
+			edge(e.expr, e.outputVar);
+		}
+
 		// attach images to gates
 		// ../../gates/not_noleads.png
 		// ../../gates/or_noleads.png
 		// ../../gates/and_noleads.png
 		// compute edges
+		
 		// print nodes
+		for(String s: nodes){
+			out.println(s);
+		}
+
 		// print edges
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		for(String s: edges){
+			out.println(s);
+		}
 		// print footer
 		footer(out);
 		out.flush();
@@ -188,27 +222,33 @@ throw new ece351.util.Todo351Exception();
 	@Override
 	public Expr visitAnd(final AndExpr e) {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
-		// return e;
+		edge(e.left, e);
+		edge(e.right, e);
+		return e;
 	}
 
 	@Override
 	public Expr visitOr(final OrExpr e) {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
-		// return e;
+		edge(e.right, e);
+		edge(e.left, e);
+		return e;
 	}
 	
 	@Override public Expr visitNaryAnd(final NaryAndExpr e) {
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
-		// return e;
+		for(Expr e2: e.children){
+			edge(e2, e);
+		}
+		return e;
 	}
 
 	@Override public Expr visitNaryOr(final NaryOrExpr e) { 
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
-		// return e;
+		for(Expr e2: e.children){
+			edge(e2, e);
+		}
+		return e;
 	}
 
 
