@@ -124,15 +124,66 @@ public final class SimulatorGenerator extends ExprVisitor {
 		// boilerplate
 		println("// write the input");
 		println("// write the output");
-// TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		println("final CommandLine cmd = new CommandLine(args);");
+		println("final String input = cmd.readInputSpec();");
+		println("final WProgram wprogram = WParboiledParser.parse(input);");
+		// TODO: longer code snippet
+		println("final Map<String,StringBuilder> output = new LinkedHashMap<String,StringBuilder>();");
+		for(AssignmentStatement s: program.formulas) {
+			println(String.format("output.put(\"%s\", new StringBuilder());",s.outputVar));
+		}
+		println("final int timeCount = wprogram.timeCount();");
+		println("for (int time = 0; time < timeCount; time++) {");
+		indent();
+		println("// values of input variables at this time step");
+		Set<String> inputVars = DetermineInputVars.inputVars(program);
+		for(String inputVar: inputVars){
+			println(String.format("final boolean in_%s = wprogram.valueAtTime(\"%s\", time);", inputVar, inputVar));
+		}
+		for(AssignmentStatement s: program.formulas) {
+			println(String.format("final String out_%s = %s ? \"1 \" : \"0 \";", s.outputVar, generateCall(s)));
+
+			println(String.format("output.get(\"%s\").append(out_%s);", s.outputVar, s.outputVar));
+		}
+		outdent();
+		println("}");
+
+		println("try {");
+		indent();
+		println("final File f = cmd.getOutputFile();");
+		println("f.getParentFile().mkdirs();");
+		println("final PrintWriter pw = new PrintWriter(new FileWriter(f));");
+		println("// write the input");
+		println("System.out.println(wprogram.toString());");
+		println("pw.println(wprogram.toString());");
+		println("// write the output");
+		println("System.out.println(f.getAbsolutePath());");
+		println("for (final Map.Entry<String,StringBuilder> e : output.entrySet()) {");
+		indent();
+		println("System.out.println(e.getKey() + \":\" + e.getValue().toString()+ \";\");");
+		println("pw.write(e.getKey() + \":\" + e.getValue().toString()+ \";\\n\");");
+		outdent();	
+		println("}");
+		println("pw.close();");
+		outdent();
+		println("} catch (final IOException e) {");
+		indent();
+		println("Debug.barf(e.getMessage());");
+		outdent();
+		println("}");
+
 		// end main method
 		outdent();
 		println("}");
 		
 		println("// methods to compute values for output pins");
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		for(AssignmentStatement s: program.formulas){
+			print(String.format("%s { return ", generateSignature(s)));
+			traverseAssignmentStatement(s);
+			print("; };");
+			println();
+		}
 		// end class
 		outdent();
 		println("}");
@@ -181,6 +232,7 @@ throw new ece351.util.Todo351Exception();
 
 	@Override
 	public Expr visitVar(final VarExpr e) {
+		out.print("_");
 		out.print(e.identifier);
 		return e;
 	}
@@ -215,11 +267,28 @@ throw new ece351.util.Todo351Exception();
 		if (signature) {
 			b.append("public static boolean ");
 		}
+		b.append("_");
 		b.append(f.outputVar);
 		b.append("(");
 		// loop over f's input variables
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		Set<String> inputVars = DetermineInputVars.inputVars(f);
+		int length = inputVars.size();
+		int count = 0;
+		for(String inputVar : inputVars){
+			if(signature){
+				b.append("final boolean _");
+			}else{
+				b.append("in_");
+			}
+			b.append(inputVar);
+			count++;
+			if (count < length){
+				b.append(',');
+				
+			} 
+		}
+
 		b.append(")");
 		return b.toString();
 	}

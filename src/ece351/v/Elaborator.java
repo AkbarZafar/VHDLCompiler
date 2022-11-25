@@ -106,7 +106,7 @@ public final class Elaborator extends PostOrderExprVisitor {
 							// i.e., call expandProcessComponent
 			 // append this new architecture to result
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+//throw new ece351.util.Todo351Exception();
 		assert result.repOk();
 		return result;
 	}
