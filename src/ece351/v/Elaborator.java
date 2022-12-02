@@ -29,7 +29,7 @@ package ece351.v;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
+import java.util.stream.Collectors;
 import org.parboiled.common.ImmutableList;
 
 import ece351.common.ast.AndExpr;
@@ -91,6 +91,49 @@ public final class Elaborator extends PostOrderExprVisitor {
 
 		// iterate over all of the designUnits in root.
 		// for each one, construct a new architecture.
+		for(DesignUnit du: root.designUnits) {
+			Architecture a = du.arch.varyComponents(ImmutableList.<Component>of());
+			for(Component component:du.arch.components){
+				compCount++;
+				current_map.clear();
+				for(DesignUnit rdu: result.designUnits){
+					if(component.entityName.equals(rdu.entity.identifier)){
+						
+						int i = 0;
+						for(String in: rdu.entity.input){
+							current_map.put(in,component.signalList.get(i));
+							i++;
+						}
+						i = 0;
+						for(String out: rdu.entity.output){
+							current_map.put(out,component.signalList.get(i+rdu.entity.input.size()));
+							i++;
+						}
+						for(String s: rdu.arch.signals){
+							String w = "comp"+compCount+"_"+s;
+							a = a.appendSignal(w);
+							current_map.put(s,w);
+						}
+						for(Statement s: rdu.arch.statements){
+							if(s instanceof IfElseStatement){
+								a =a.appendStatement(changeIfVars((IfElseStatement)s));
+							}
+							if(s instanceof Process){
+								a =a.appendStatement(expandProcessComponent((Process)s));
+
+							}
+							if(s instanceof AssignmentStatement){
+								a =a.appendStatement(changeStatementVars((AssignmentStatement)s));
+
+							}
+						}
+					}
+
+				}
+			}
+			
+			result=result.append(du.setArchitecture(a));
+		}
 		// Architecture a = du.arch.varyComponents(ImmutableList.<Component>of());
 		// this gives us a copy of the architecture with an empty list of components.
 		// now we can build up this Architecture with new components.
@@ -114,19 +157,36 @@ public final class Elaborator extends PostOrderExprVisitor {
 	// you do not have to use these helper methods; we found them useful though
 	private Process expandProcessComponent(final Process process) {
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		ImmutableList<Statement> a = ImmutableList.of();
+		for(Statement s: process.sequentialStatements){
+			if(s instanceof IfElseStatement){
+				a =a.append(changeIfVars((IfElseStatement)s));
+			}
+			if(s instanceof Process){
+				a =a.append(expandProcessComponent((Process)s));
+
+			}
+			if(s instanceof AssignmentStatement){
+				a =a.append(changeStatementVars((AssignmentStatement)s));
+
+			}
+		}
+		return new Process(a,ImmutableList.copyOf(process.sensitivityList.stream().map(x->current_map.getOrDefault(x, x)).collect(Collectors.toList())));
 	}
 	
 	// you do not have to use these helper methods; we found them useful though
 	private  IfElseStatement changeIfVars(final IfElseStatement s) {
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		return new IfElseStatement(ImmutableList.copyOf(s.elseBody.stream().map(x->changeStatementVars(x)).collect(Collectors.toList())),
+		ImmutableList.copyOf(s.ifBody.stream().map(x->changeStatementVars(x)).collect(Collectors.toList()))
+		,traverseExpr(s.condition));
 	}
 
 	// you do not have to use these helper methods; we found them useful though
 	private AssignmentStatement changeStatementVars(final AssignmentStatement s){
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+return new AssignmentStatement((VarExpr)visitVar(s.outputVar),traverseExpr(s.expr));
+
 	}
 	
 	
@@ -134,7 +194,7 @@ throw new ece351.util.Todo351Exception();
 	public Expr visitVar(VarExpr e) {
 		// TODO replace/substitute the variable found in the map
 // TODO: short code snippet
-throw new ece351.util.Todo351Exception();
+		return new VarExpr(current_map.getOrDefault(e.identifier, e.identifier));
 	}
 	
 	// do not rewrite these parts of the AST

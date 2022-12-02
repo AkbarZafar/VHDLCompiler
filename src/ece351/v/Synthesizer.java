@@ -85,7 +85,7 @@ public final class Synthesizer extends PostOrderExprVisitor {
 		FProgram result = new FProgram();
 			// set varPrefix for this design unit
 // TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+// throw new ece351.util.Todo351Exception();
 		return result;
 	}
 	
