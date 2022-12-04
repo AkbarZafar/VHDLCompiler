@@ -63,16 +63,16 @@ public final class Splitter extends PostOrderExprVisitor {
 	public static void main(String[] args) {
 		System.out.println(split(args));
 	}
-	
+
 	public static VProgram split(final String[] args) {
 		return split(new CommandLine(args));
 	}
-	
+
 	public static VProgram split(final CommandLine c) {
 		final VProgram program = DeSugarer.desugar(c);
-        return split(program);
+		return split(program);
 	}
-	
+
 	public static VProgram split(final VProgram program) {
 		VProgram p = Elaborator.elaborate(program);
 		final Splitter s = new Splitter();
@@ -80,25 +80,75 @@ public final class Splitter extends PostOrderExprVisitor {
 	}
 
 	private VProgram splitit(final VProgram program) {
-					// Determine if the process needs to be split into multiple processes
-						// Split the process if there are if/else statements so that the if/else statements only assign values to one pin
-// TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		// Determine if the process needs to be split into multiple processes
+		// Split the process if there are if/else statements so that the if/else
+		// statements only assign values to one pin
+		// TODO: longer code snippet
+		VProgram newProgram = new VProgram();
+
+		for (DesignUnit du : program.designUnits) {
+			ImmutableList<Statement> newStatements = ImmutableList.of();
+			for (Statement stmt : du.arch.statements) {
+				if (stmt instanceof Process) {
+					for (Statement seqstmt : ((Process) stmt).sequentialStatements) {
+						if (seqstmt instanceof IfElseStatement) {
+							ImmutableList<Statement> splitStatements = splitIfElseStatement((IfElseStatement) seqstmt);
+							for (Statement ifelse : splitStatements) {
+								newStatements = newStatements.append(ifelse);
+							}
+						} else {
+							newStatements = newStatements.append((Process)stmt);
+							break;
+						}
+					}
+				} else {
+					newStatements = newStatements.append(stmt);
+				}
+			}
+			newProgram = newProgram
+						.append(new DesignUnit(new Architecture(newStatements, du.arch.components, du.arch.signals,
+								du.arch.entityName, du.arch.architectureName), du.entity));
+		}
+
+		return newProgram;
 	}
-	
+
 	// You do not have to use this helper method, but we found it useful
-	
+
 	private ImmutableList<Statement> splitIfElseStatement(final IfElseStatement ifStmt) {
 		// loop over each statement in the ifBody
-			// loop over each statement in the elseBody
-				// check if outputVars are the same
-					// initialize/clear this.usedVarsInExpr
-					// call traverse a few times to build up this.usedVarsInExpr
-					// build sensitivity list from this.usedVarsInExpr
-					// build the resulting list of split statements
+		// loop over each statement in the elseBody
+		// check if outputVars are the same
+		// initialize/clear this.usedVarsInExpr
+		// call traverse a few times to build up this.usedVarsInExpr
+		// build sensitivity list from this.usedVarsInExpr
+		// build the resulting list of split statements
 		// return result
-// TODO: longer code snippet
-throw new ece351.util.Todo351Exception();
+		// TODO: longer code snippet
+		ImmutableList<Statement> newProcesses = ImmutableList.of();
+		for (AssignmentStatement ifbody : ifStmt.ifBody) {
+			usedVarsInExpr.clear();
+			IfElseStatement newIfElseStatement = new IfElseStatement(ifStmt.condition);
+			newIfElseStatement = newIfElseStatement.appendToTrueBlock(ifbody);
+			for (AssignmentStatement elsebody : ifStmt.elseBody) {
+				if (ifbody.outputVar.equals(elsebody.outputVar)) {
+					newIfElseStatement = newIfElseStatement.appendToElseBlock(elsebody);
+					traverseExpr(elsebody.expr);
+					break;
+				}
+			}
+			traverseExpr(ifStmt.condition);
+			traverseExpr(ifbody.expr);
+			ImmutableList<Statement> newStatement = ImmutableList.of();
+			ImmutableList<String> newSensitivityList = ImmutableList.of();
+			for (String s : usedVarsInExpr) {
+				newSensitivityList = newSensitivityList.append(s);
+			}
+			newProcesses = newProcesses
+					.append(new Process(newStatement.append(newIfElseStatement), newSensitivityList));
+		}
+
+		return newProcesses;
 	}
 
 	@Override
@@ -108,16 +158,59 @@ throw new ece351.util.Todo351Exception();
 	}
 
 	// no-ops
-	@Override public Expr visitConstant(ConstantExpr e) { return e; }
-	@Override public Expr visitNot(NotExpr e) { return e; }
-	@Override public Expr visitAnd(AndExpr e) { return e; }
-	@Override public Expr visitOr(OrExpr e) { return e; }
-	@Override public Expr visitXOr(XOrExpr e) { return e; }
-	@Override public Expr visitNAnd(NAndExpr e) { return e; }
-	@Override public Expr visitNOr(NOrExpr e) { return e; }
-	@Override public Expr visitXNOr(XNOrExpr e) { return e; }
-	@Override public Expr visitEqual(EqualExpr e) { return e; }
-	@Override public Expr visitNaryAnd(NaryAndExpr e) { return e; }
-	@Override public Expr visitNaryOr(NaryOrExpr e) { return e; }
+	@Override
+	public Expr visitConstant(ConstantExpr e) {
+		return e;
+	}
+
+	@Override
+	public Expr visitNot(NotExpr e) {
+		return e;
+	}
+
+	@Override
+	public Expr visitAnd(AndExpr e) {
+		return e;
+	}
+
+	@Override
+	public Expr visitOr(OrExpr e) {
+		return e;
+	}
+
+	@Override
+	public Expr visitXOr(XOrExpr e) {
+		return e;
+	}
+
+	@Override
+	public Expr visitNAnd(NAndExpr e) {
+		return e;
+	}
+
+	@Override
+	public Expr visitNOr(NOrExpr e) {
+		return e;
+	}
+
+	@Override
+	public Expr visitXNOr(XNOrExpr e) {
+		return e;
+	}
+
+	@Override
+	public Expr visitEqual(EqualExpr e) {
+		return e;
+	}
+
+	@Override
+	public Expr visitNaryAnd(NaryAndExpr e) {
+		return e;
+	}
+
+	@Override
+	public Expr visitNaryOr(NaryOrExpr e) {
+		return e;
+	}
 
 }
