@@ -60,8 +60,13 @@ public final class WRecursiveDescentRecognizer {
     }
 
     public void waveform() {
-        String iD = lexer.consumeID();
-        lexer.consume(":");
+        while (lexer.inspectID()){
+            lexer.consumeID();
+            
+        }
+        if(lexer.inspect(":")){
+            lexer.consume(":");
+        }
 
         String[] bits = {"0", "1"};
 

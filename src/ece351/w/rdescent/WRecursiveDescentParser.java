@@ -52,9 +52,15 @@ public final class WRecursiveDescentParser {
 // TODO: longer code snippet
         WProgram program = new WProgram();
         while (!lexer.inspectEOF()) {
-            String name = lexer.consumeID();
+            String name = "";
+            while (lexer.inspectID()){
+                name = lexer.consumeID();
+                
+            }
+            if(lexer.inspect(":")){
+                lexer.consume(":");
+            }
             Waveform wave = new Waveform(name);
-            lexer.consume(":");
     
             String[] bits = {"0", "1"};
     
